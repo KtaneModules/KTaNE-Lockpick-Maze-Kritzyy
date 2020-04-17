@@ -637,6 +637,7 @@ public class LockpickMazeModule : MonoBehaviour
         }
 
     }
+
     IEnumerator HandleTimer()
     {
         BombAudio.PlaySoundAtTransform("ClockTickingBeat1", transform);
@@ -644,12 +645,10 @@ public class LockpickMazeModule : MonoBehaviour
         TimeLeft = 30;
         for (int T = 0; T < 31; T++)
         {
-            Debug.LogWarning("T = " + T + ". TimeLeft = " + TimeLeft);
             if (!Solved)
             {
                 if (TimeLeft == 29)
                 {
-                    Debug.LogError("Paused");
                 }
                 if (TimeLeft == 0)
                 {
@@ -658,6 +657,12 @@ public class LockpickMazeModule : MonoBehaviour
 
                     BombAudio.PlaySoundAtTransform("ClockTickingFinalBeat", transform);
                     BombAudio.PlaySoundAtTransform("TimesUp", transform);
+
+                    if (KeyLock != null)
+                    {
+                        KeyLock.StopSound();
+                        KeyLock = null;
+                    }
 
                     StartCoroutine(TurnLock());
                     StopCoroutine(MinuteHandAnim());
