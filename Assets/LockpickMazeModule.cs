@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
 using KModkit;
 using Random = UnityEngine.Random;
 
@@ -637,10 +636,7 @@ public class LockpickMazeModule : MonoBehaviour
             }
             yield return new WaitForSecondsRealtime(0.025f);
         }
-		LockUnlocked = false;
-
     }
-
     IEnumerator HandleTimer()
     {
         BombAudio.PlaySoundAtTransform("ClockTickingBeat1", transform);
@@ -648,8 +644,9 @@ public class LockpickMazeModule : MonoBehaviour
         TimeLeft = 30;
         for (int T = 0; T < 31; T++)
         {
+            Debug.LogWarning("T = " + T + ". TimeLeft = " + TimeLeft);
             if (!Solved)
-            {
+            {	
                 if (TimeLeft == 0)
                 {
                     Debug.LogFormat("[Lockpick Maze #{0}] Time has ended. Strike handed.", ModuleID);
@@ -657,12 +654,6 @@ public class LockpickMazeModule : MonoBehaviour
 
                     BombAudio.PlaySoundAtTransform("ClockTickingFinalBeat", transform);
                     BombAudio.PlaySoundAtTransform("TimesUp", transform);
-
-                    if (KeyLock != null)
-                    {
-                        KeyLock.StopSound();
-                        KeyLock = null;
-                    }
 
                     StartCoroutine(TurnLock());
                     StopCoroutine(MinuteHandAnim());
@@ -674,6 +665,7 @@ public class LockpickMazeModule : MonoBehaviour
                     DownBtn.OnInteract = HandleBlank;
 
                     LockBtn.OnInteract = HandleLockPress;
+					LockUnlocked = false;
                 }
                 else
                 {
@@ -735,31 +727,38 @@ public class LockpickMazeModule : MonoBehaviour
 	
 	//twitch plays
     #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"To determine the current time of the PC being used, use the command !{0} time | To unlock the lock in the module, use the command !{0} unlock on [SPECIFIC TIME] (You must use the format of Tweak's timer for inputting the specific time in the command. Example: 09:23, 6:45:32, 1:02:32:11, 00:22) | To move in the maze, use the command !{0} press n/e/w/s or u/r/d/l (The movement can be performed in a chain)";
+    private readonly string TwitchHelpMessage = @"To determine the current time of the PC being used, use the command !{0} real time | To determine the current time of the bomb, use the command !{0} bomb time | To unlock the lock in the module, use the command !{0} unlock on [SPECIFIC TIME] (You must use the format of Tweaks' timer for inputting the specific time in the command. Example: 09:23, 6:45:32, 1:02:32:11, 00:22. Also, you may have to convert the bomb's time format to Tweaks' time format, and vice versa to get accurate times. Also, the time rule is based on the bomb's timer, not Tweaks' timer.) | To move in the maze, use the command !{0} press n/e/w/s or u/r/d/l (The movement can be performed in a chain)";
     #pragma warning restore 414
 	
 	bool LockUnlocked = false;
+	
 	int TimingIsSomething;
 	string[] ValidNumbers = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 	string[] SecondsAndMinutes = {"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59"};
 	string[] HoursIfSolo = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"};
-	string[] HoursIfMulti = {"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"};
+	string[] HoursIfMulti = {"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"};
 	string[] DaysUltimate = {"1", "2", "3", "4", "5", "6"};
 	string[] ValidMovements = {"u", "d", "r", "l", "n", "e", "s", "w", "U", "D", "R", "L", "N", "E", "S", "W"};
 	
 	IEnumerator ProcessTwitchCommand(string command)
 	{
 		string[] parameters = command.Split(' ');
-		if (Regex.IsMatch(command, @"^\s*time\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+		if (Regex.IsMatch(command, @"^\s*real time\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
 		{
 			DateTime currenttime = DateTime.Now;
 			yield return "sendtochaterror Current Date/Time: " + currenttime.ToString();
 		}
 		
+		if (Regex.IsMatch(command, @"^\s*bomb time\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+		{
+			string BombTime = BombInfo.GetFormattedTime();
+			yield return "sendtochaterror Current Bomb Time: " + BombTime;
+		}
+		
 		if (Regex.IsMatch(parameters[0], @"^\s*press\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
 		{
 			yield return null;
-			if (LockUnlocked == true)
+			if (LockUnlocked == false)
 			{
 				yield return "sendtochaterror The lock is still locked. You are unable to interact with the arrows.";
 				yield break;
@@ -817,9 +816,9 @@ public class LockpickMazeModule : MonoBehaviour
 				{
 					string[] timer = parameters[2].Split(':');
 					
-					if (timer.Length == 1)
+					if (timer.Length < 2 || timer.Length > 4)
 					{
-						yield return "sendtochaterror Time format given is not valid.";
+						yield return "sendtochaterror Time length given is not valid.";
 						yield break;
 					}
 					
