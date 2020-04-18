@@ -1,10 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using KModkit;
-using System;
-using Random = UnityEngine.Random;
 using System.Linq;
+using System.Text.RegularExpressions;
+using UnityEngine;
+using UnityEngine.SocialPlatforms;
+using KModkit;
+using Random = UnityEngine.Random;
 
 public class LockpickMazeModule : MonoBehaviour
 {
@@ -464,7 +466,7 @@ public class LockpickMazeModule : MonoBehaviour
         string time = BombInfo.GetFormattedTime().Remove(0, 3);
         if (!DateTime.Now.ToString("mm").Any(time.Contains))
         {
-            Debug.LogFormat("<Lockpick Maze #{0}> Actual time: {1} minutes. Bomb time {2}. Conditions are met.", ModuleID, DateTime.Now.ToString("mm"), BombInfo.GetFormattedTime());
+            Debug.LogFormat("[Lockpick Maze #{0}] Actual time: {1} minutes. Bomb time {2}. Conditions are met.", ModuleID, DateTime.Now.ToString("mm"), BombInfo.GetFormattedTime());
             Debug.LogFormat("[Lockpick Maze #{0}] The timer has started, good luck.", ModuleID);
             Initiate();
         }
@@ -472,13 +474,13 @@ public class LockpickMazeModule : MonoBehaviour
         {
             if (BombInfo.GetTime() < 60)
             {
-                Debug.LogFormat("<Lockpick Maze #{0}> Actual time: {1} minutes. Bomb time {2}. Conditions not met, but bomb time is {3}, which is below 60.", ModuleID, DateTime.Now.ToString("mm"), BombInfo.GetFormattedTime(), BombInfo.GetTime());
+                Debug.LogFormat("[Lockpick Maze #{0}] Actual time: {1} minutes. Bomb time {2}. Conditions not met, but bomb time is {3}, which is below 60.", ModuleID, DateTime.Now.ToString("mm"), BombInfo.GetFormattedTime(), BombInfo.GetTime());
                 Debug.LogFormat("[Lockpick Maze #{0}] The timer has started, good luck.", ModuleID);
                 Initiate();
             }
             else
             {
-                Debug.LogFormat("<Lockpick Maze #{0}> Actual time: {1} minutes. Bomb time {2}. Conditions not met.", ModuleID, DateTime.Now.ToString("mm"), BombInfo.GetFormattedTime());
+                Debug.LogFormat("[Lockpick Maze #{0}] Actual time: {1} minutes. Bomb time {2}. Conditions not met.", ModuleID, DateTime.Now.ToString("mm"), BombInfo.GetFormattedTime());
                 Debug.LogFormat("[Lockpick Maze #{0}] Initiate conditions not met. Strike handed.", ModuleID);
                 BombAudio.PlaySoundAtTransform("IntruderAlert", transform);
                 Module.HandleStrike();
@@ -489,6 +491,7 @@ public class LockpickMazeModule : MonoBehaviour
 
     void Initiate()
     {
+		LockUnlocked = true;
         UpBtn.OnInteract = HandleUp;
         LeftBtn.OnInteract = HandleLeft;
         RightBtn.OnInteract = HandleRight;
@@ -504,7 +507,6 @@ public class LockpickMazeModule : MonoBehaviour
 
         StartCoroutine(MinuteHandAnim());
         StartCoroutine(HourHandAnim());
-
     }
 
     protected bool HandleUp()
@@ -635,6 +637,7 @@ public class LockpickMazeModule : MonoBehaviour
             }
             yield return new WaitForSecondsRealtime(0.025f);
         }
+		LockUnlocked = false;
 
     }
     IEnumerator HandleTimer()
@@ -647,10 +650,11 @@ public class LockpickMazeModule : MonoBehaviour
             Debug.LogWarning("T = " + T + ". TimeLeft = " + TimeLeft);
             if (!Solved)
             {
-                if (TimeLeft == 29)
-                {
-                    Debug.LogError("Paused");
-                }
+                //if (TimeLeft == 29)
+                //{
+				//	Debug.LogError("Paused");
+                //}
+				
                 if (TimeLeft == 0)
                 {
                     Debug.LogFormat("[Lockpick Maze #{0}] Time has ended. Strike handed.", ModuleID);
@@ -727,4 +731,158 @@ public class LockpickMazeModule : MonoBehaviour
             yield return new WaitForSeconds(1f);
         }
     }
+	
+	//twitch plays
+    #pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"To determine the current time of the PC being used, use the command !{0} time | To unlock the lock in the module, use the command !{0} unlock on [SPECIFIC TIME] (You must use the format of Tweak's timer for inputting the specific time in the command. Example: 09:23, 6:45:32, 1:02:32:11, 00:22) | To move in the maze, use the command !{0} press n/e/w/s or u/r/d/l (The movement can be performed in a chain)";
+    #pragma warning restore 414
+	
+	bool LockUnlocked = false;
+	int TimingIsSomething;
+	string[] ValidNumbers = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+	string[] SecondsAndMinutes = {"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59"};
+	string[] HoursIfSolo = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"};
+	string[] HoursIfMulti = {"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"};
+	string[] DaysUltimate = {"1", "2", "3", "4", "5", "6"};
+	string[] ValidMovements = {"u", "d", "r", "l", "n", "e", "s", "w", "U", "D", "R", "L", "N", "E", "S", "W"};
+	
+	IEnumerator ProcessTwitchCommand(string command)
+	{
+		string[] parameters = command.Split(' ');
+		if (Regex.IsMatch(command, @"^\s*time\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+		{
+			DateTime currenttime = DateTime.Now;
+			yield return "sendtochaterror Current Date/Time: " + currenttime.ToString();
+		}
+		
+		if (Regex.IsMatch(parameters[0], @"^\s*press\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+		{
+			yield return null;
+			if (LockUnlocked == true)
+			{
+				yield return "sendtochaterror The lock is still locked. You are unable to interact with the arrows.";
+				yield break;
+			}
+			
+			if (parameters.Length == 2)
+			{
+				foreach (char c in parameters[1])
+				{
+					if (!c.ToString().EqualsAny(ValidMovements))
+					{
+						yield return "sendtochaterror An invalid movement has been detected in the command. The command was not initiated.";
+						yield break;
+					}
+				}
+				
+				foreach (char d in parameters[1])
+				{
+					if (d.Equals('u') || d.Equals('U') || d.Equals('n') || d.Equals('N'))
+					{
+						UpBtn.OnInteract();
+						yield return new WaitForSeconds(0.1f);
+					}
+					else if (d.Equals('d') || d.Equals('D') || d.Equals('s') || d.Equals('S'))
+					{
+						DownBtn.OnInteract();
+						yield return new WaitForSeconds(0.1f);
+					}
+					else if (d.Equals('l') || d.Equals('L') || d.Equals('w') || d.Equals('W'))
+					{
+						LeftBtn.OnInteract();
+						yield return new WaitForSeconds(0.1f);
+					}
+					else if (d.Equals('r') || d.Equals('R') || d.Equals('e') || d.Equals('E'))
+					{
+						RightBtn.OnInteract();
+						yield return new WaitForSeconds(0.1f);
+					}
+				}
+			}
+		}
+		
+		if (Regex.IsMatch(parameters[0], @"^\s*unlock\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+		{
+			if (Regex.IsMatch(parameters[1], @"^\s*on\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+			{
+				yield return null;
+				if (LockUnlocked == true)
+				{
+					yield return "sendtochaterror The lock is unlocked now. You are unable to unlock it again.";
+					yield break;
+				}
+				
+				if (parameters.Length == 3)
+				{
+					string[] timer = parameters[2].Split(':');
+					
+					if (timer.Length == 1)
+					{
+						yield return "sendtochaterror Time format given is not valid.";
+						yield break;
+					}
+					
+					foreach (string a in timer)
+					{
+						foreach (char b in a)
+						{
+							if(!b.ToString().EqualsAny(ValidNumbers))
+							{
+								yield return "sendtochaterror Time given contains a character which is not a number.";
+								yield break;
+							}
+						}
+					}
+					
+					if (timer.Length == 2)
+					{
+						if (!timer[0].EqualsAny(SecondsAndMinutes) || !timer[1].EqualsAny(SecondsAndMinutes))
+						{
+							yield return "sendtochaterror Time format given is not valid.";
+							yield break;
+						}
+					}
+					
+					else if (timer.Length == 3)
+					{
+						if (!timer[0].EqualsAny(HoursIfSolo) || !timer[1].EqualsAny(SecondsAndMinutes) || !timer[2].EqualsAny(SecondsAndMinutes))
+						{
+							yield return "sendtochaterror Time format given is not valid.";
+							yield break;
+						}
+					}
+					
+					else if (timer.Length == 4)
+					{
+						if (!timer[0].EqualsAny(DaysUltimate) || !timer[1].EqualsAny(HoursIfMulti) || !timer[2].EqualsAny(SecondsAndMinutes) || !timer[3].EqualsAny(SecondsAndMinutes))
+						{
+							yield return "sendtochaterror Time format given is not valid.";
+							yield break;
+						}
+					}
+					
+					if (timer.Length == 2)
+					{
+						TimingIsSomething = (Int32.Parse(timer[0]) * 60) + Int32.Parse(timer[1]);
+					}
+					
+					else if (timer.Length == 3)
+						TimingIsSomething = (Int32.Parse(timer[0]) * 60 * 60) + (Int32.Parse(timer[1]) * 60) + Int32.Parse(timer[2]);
+					
+					else if (timer.Length == 4)
+					{
+						TimingIsSomething = (Int32.Parse(timer[0]) * 60 * 60 * 24) + (Int32.Parse(timer[0]) * 60 * 60) + (Int32.Parse(timer[1]) * 60) + Int32.Parse(timer[2]);
+					}
+						
+					while(((int)BombInfo.GetTime()).ToString() != TimingIsSomething.ToString())
+					{
+						yield return "trycancel The unlocking command was cancelled due to a cancel request.";
+					}
+					
+					LockBtn.OnInteract();
+					yield return "sendtochaterror The lock in now unlocked. Good luck.";
+				}	
+			}
+		}
+	}
 }
