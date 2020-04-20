@@ -422,6 +422,7 @@ public class LockpickMazeModule : MonoBehaviour
         {
             RowNumber += 2;
         }
+        if (BombInfo.GetBatteryCount() < 4) RowNumber += BombInfo.GetBatteryCount();
 
         while (ColumnNumber > 8)
         {
