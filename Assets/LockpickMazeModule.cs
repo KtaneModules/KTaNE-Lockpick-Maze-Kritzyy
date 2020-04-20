@@ -747,13 +747,13 @@ public class LockpickMazeModule : MonoBehaviour
 		if (Regex.IsMatch(command, @"^\s*real time\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
 		{
 			DateTime currenttime = DateTime.Now;
-			yield return "sendtochaterror Current Date/Time: " + currenttime.ToString();
+			yield return "sendtochat Current Date/Time: " + currenttime.ToString();
 		}
 		
 		if (Regex.IsMatch(command, @"^\s*bomb time\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
 		{
 			string BombTime = BombInfo.GetFormattedTime();
-			yield return "sendtochaterror Current Bomb Time: " + BombTime;
+			yield return "sendtochat Current Bomb Time: " + BombTime;
 		}
 		
 		if (Regex.IsMatch(parameters[0], @"^\s*press\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
