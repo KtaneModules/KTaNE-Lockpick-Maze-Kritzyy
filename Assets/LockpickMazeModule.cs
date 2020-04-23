@@ -424,11 +424,13 @@ public class LockpickMazeModule : MonoBehaviour
         }
         if (BombInfo.GetBatteryCount() < 4) RowNumber += BombInfo.GetBatteryCount();
 
+        Debug.LogFormat("<Lockpick Maze #{0}> Batteries: {1} (Less than 4?: {2}), Indicators ON: {3} (Add {4} to RowNumber), Indicators OFF: {5}, Serial 1st digit: {6}. RowNumber before addition/subtration: {7}", ModuleID, BombInfo.GetBatteryCount(), (BombInfo.GetBatteryCount() < 4), BombInfo.GetOnIndicators().Count(), (BombInfo.GetOnIndicators().Count() * 2), BombInfo.GetOffIndicators().Count(), BombInfo.GetSerialNumberNumbers().First(), RowNumber);
+
         while (ColumnNumber > 8)
         {
             ColumnNumber -= 8;
         }
-        while (ColumnNumber < 0)
+        while (ColumnNumber <= 0)
         {
             ColumnNumber += 8;
         }
@@ -437,7 +439,7 @@ public class LockpickMazeModule : MonoBehaviour
         {
             RowNumber -= 8;
         }
-        while (RowNumber < 0)
+        while (RowNumber <= 0)
         {
             RowNumber += 8;
         }
