@@ -17,8 +17,6 @@ public class LockpickMazeModule : MonoBehaviour
 
     public KMAudio BombAudio;
 
-    KMAudio.KMAudioRef KeyLock;
-
     public KMBombInfo BombInfo;
 
     public GameObject MazeBlock;
@@ -53,7 +51,7 @@ public class LockpickMazeModule : MonoBehaviour
     int ModuleID;
 
     //Strings
-    string DebugStartingColumn, DebugGoalColumn;
+    string DebugStartingColumn, DebugGoalColumn, DebugCurrentColumn;
     public string[] ArrowColors; //0 = up, 1 = left, 2 = right, 3 = down.
 
     private List<string[,]> Maze;
@@ -166,7 +164,7 @@ public class LockpickMazeModule : MonoBehaviour
                         new string[8, 8]//Silver
                         {
                             { "D", "D R", "L R", "L R", "L R", "L R", "L R", "L D" },
-                            { "U D", "U R", "L R", "L D", "L D", "L D", "U", "D" },
+                            { "U D", "U R", "L R", "L R", "L R", "L D", "U", "D" },
                             { "U R D", "L", "R D", "L D", "D R", "U R D", "L R", "U R D" },
                             { "U R", "L D", "U D", "U D", "U D", "U D", "D", "U D" },
                             { "R D", "U L D", "U D", "U D", "U D", "U D", "U D", "U D" },
@@ -362,8 +360,11 @@ public class LockpickMazeModule : MonoBehaviour
         CurrentRow--;
         CurrentColumn--;
 
+        DebugCurrentColumn = Number2String(CurrentColumn + 1, true);
         DebugStartingColumn = Number2String(StartingColumn + 1, true);
         Debug.LogFormat("[Lockpick Maze #{0}] Your starting location is {1}", ModuleID, DebugStartingColumn + (StartingRow + 1));
+
+
 
         PawnPosition(StartingRow, StartingColumn);
 
@@ -376,28 +377,24 @@ public class LockpickMazeModule : MonoBehaviour
         //Goal column
         int ColumnNumber = BombInfo.GetSolvableModuleNames().Count();
         bool SpecialCase = false;
-        bool IsLockpickMaze;
 
         foreach (string ModuleName in BombInfo.GetSolvableModuleNames())
         {
-            IsLockpickMaze = false;
-            if (ModuleName.Contains("Lockpick"))
+            if (!ModuleName.Contains("Lockpick"))
             {
-                IsLockpickMaze = true;
+                if (ModuleName.Contains("Color"))
+                {
+                    ColumnNumber += 5;
+                }
+                else if (ModuleName.Contains("Maze"))
+                {
+                    ColumnNumber += 3;
+                }
+                else if (ModuleName.Contains("Button"))
+                {
+                    ColumnNumber += 1;
+                }
             }
-            if (ModuleName.Contains("Color"))
-            {
-                ColumnNumber += 5;
-            }
-            else if (ModuleName.Contains("Maze") && !IsLockpickMaze)
-            {
-                ColumnNumber += 3;
-            }
-            else if (ModuleName.Contains("Button"))
-            {
-                ColumnNumber += 1;
-            }
-
         }
         foreach (string ModuleName in BombInfo.GetSolvableModuleNames())
         {
@@ -504,7 +501,6 @@ public class LockpickMazeModule : MonoBehaviour
         StartCoroutine(TurnLock());
         StartCoroutine(HandleTimer());
 
-        KeyLock = BombAudio.PlaySoundAtTransformWithRef("KeyLock", transform);
         BombAudio.PlaySoundAtTransform("MazeTurning", transform);
 
         StartCoroutine(MinuteHandAnim());
@@ -516,12 +512,13 @@ public class LockpickMazeModule : MonoBehaviour
         if (Maze[0][CurrentRow, CurrentColumn].Contains("U"))
         {
             CurrentRow--;
+            DebugCurrentColumn = Number2String(CurrentColumn + 1, true);
             PawnPosition(CurrentRow, CurrentColumn);
             CheckFinish();
         }
         else
         {
-            Debug.LogFormat("[Lockpick Maze #{0}] Going up at {1}{2} caused a strike", ModuleID, CurrentRow, CurrentColumn);
+            Debug.LogFormat("[Lockpick Maze #{0}] Going up at {1}{2} caused a strike", ModuleID, DebugCurrentColumn, CurrentRow + 1);
             Module.HandleStrike();
         }
         return false;
@@ -531,12 +528,13 @@ public class LockpickMazeModule : MonoBehaviour
         if (Maze[0][CurrentRow, CurrentColumn].Contains("L"))
         {
             CurrentColumn--;
+            DebugCurrentColumn = Number2String(CurrentColumn + 1, true);
             PawnPosition(CurrentRow, CurrentColumn);
             CheckFinish();
         }
         else
         {
-            Debug.LogFormat("[Lockpick Maze #{0}] Going left at {1}{2} caused a strike", ModuleID, CurrentRow, CurrentColumn);
+            Debug.LogFormat("[Lockpick Maze #{0}] Going left at {1}{2} caused a strike", ModuleID, DebugCurrentColumn, CurrentRow + 1);
             Module.HandleStrike();
         }
         return false;
@@ -546,12 +544,13 @@ public class LockpickMazeModule : MonoBehaviour
         if (Maze[0][CurrentRow, CurrentColumn].Contains("R"))
         {
             CurrentColumn++;
+            DebugCurrentColumn = Number2String(CurrentColumn + 1, true);
             PawnPosition(CurrentRow, CurrentColumn);
             CheckFinish();
         }
         else
         {
-            Debug.LogFormat("[Lockpick Maze #{0}] Going right at {1}{2} caused a strike", ModuleID, CurrentRow, CurrentColumn);
+            Debug.LogFormat("[Lockpick Maze #{0}] Going right at {1}{2} caused a strike", ModuleID, DebugCurrentColumn, CurrentRow + 1);
             Module.HandleStrike();
         }
         return false;
@@ -561,12 +560,13 @@ public class LockpickMazeModule : MonoBehaviour
         if (Maze[0][CurrentRow, CurrentColumn].Contains("D"))
         {
             CurrentRow++;
+            DebugCurrentColumn = Number2String(CurrentColumn + 1, true);
             PawnPosition(CurrentRow, CurrentColumn);
             CheckFinish();
         }
         else
         {
-            Debug.LogFormat("[Lockpick Maze #{0}] Going down at {1}{2} caused a strike", ModuleID, CurrentRow, CurrentColumn);
+            Debug.LogFormat("[Lockpick Maze #{0}] Going down at {1}{2} caused a strike", ModuleID, DebugCurrentColumn, CurrentRow + 1);
             Module.HandleStrike();
         }
         return false;
@@ -582,7 +582,6 @@ public class LockpickMazeModule : MonoBehaviour
         if (CurrentRow == GoalRow && CurrentColumn == GoalColumn)
         {
             Debug.LogFormat("[Lockpick Maze #{0}] Reached the end of the maze, module solved.", ModuleID);
-            KeyLock.StopSound();
             BombAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, transform);
             BombAudio.PlaySoundAtTransform("MazeTurning", transform);
             StartCoroutine(TurnLock());
@@ -647,7 +646,6 @@ public class LockpickMazeModule : MonoBehaviour
         TimeLeft = 30;
         for (int T = 0; T < 31; T++)
         {
-            Debug.LogWarning("T = " + T + ". TimeLeft = " + TimeLeft);
             if (!Solved)
             {	
                 if (TimeLeft == 0)
@@ -742,150 +740,129 @@ public class LockpickMazeModule : MonoBehaviour
 	string[] HoursIfMulti = {"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"};
 	string[] DaysUltimate = {"1", "2", "3", "4", "5", "6"};
 	string[] ValidMovements = {"u", "d", "r", "l", "n", "e", "s", "w", "U", "D", "R", "L", "N", "E", "S", "W"};
-	
-	IEnumerator ProcessTwitchCommand(string command)
-	{
-		string[] parameters = command.Split(' ');
-		if (Regex.IsMatch(command, @"^\s*real time\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
-		{
-			DateTime currenttime = DateTime.Now;
-			yield return "sendtochat Current Date/Time: " + currenttime.ToString();
-		}
-		
-		if (Regex.IsMatch(command, @"^\s*bomb time\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
-		{
-			string BombTime = BombInfo.GetFormattedTime();
-			yield return "sendtochat Current Bomb Time: " + BombTime;
-		}
-		
-		if (Regex.IsMatch(parameters[0], @"^\s*press\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
-		{
-			yield return null;
-			if (LockUnlocked == false)
-			{
-				yield return "sendtochaterror The lock is still locked. You are unable to interact with the arrows.";
-				yield break;
-			}
-			
-			if (parameters.Length == 2)
-			{
-				foreach (char c in parameters[1])
-				{
-					if (!c.ToString().EqualsAny(ValidMovements))
-					{
-						yield return "sendtochaterror An invalid movement has been detected in the command. The command was not initiated.";
-						yield break;
-					}
-				}
-				
-				foreach (char d in parameters[1])
-				{
-					if (d.Equals('u') || d.Equals('U') || d.Equals('n') || d.Equals('N'))
-					{
-						UpBtn.OnInteract();
-						yield return new WaitForSeconds(0.1f);
-					}
-					else if (d.Equals('d') || d.Equals('D') || d.Equals('s') || d.Equals('S'))
-					{
-						DownBtn.OnInteract();
-						yield return new WaitForSeconds(0.1f);
-					}
-					else if (d.Equals('l') || d.Equals('L') || d.Equals('w') || d.Equals('W'))
-					{
-						LeftBtn.OnInteract();
-						yield return new WaitForSeconds(0.1f);
-					}
-					else if (d.Equals('r') || d.Equals('R') || d.Equals('e') || d.Equals('E'))
-					{
-						RightBtn.OnInteract();
-						yield return new WaitForSeconds(0.1f);
-					}
-				}
-			}
-		}
-		
-		if (Regex.IsMatch(parameters[0], @"^\s*unlock\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
-		{
-			if (Regex.IsMatch(parameters[1], @"^\s*on\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
-			{
-				yield return null;
-				if (LockUnlocked == true)
-				{
-					yield return "sendtochaterror The lock is unlocked now. You are unable to unlock it again.";
-					yield break;
-				}
-				
-				if (parameters.Length == 3)
-				{
-					string[] timer = parameters[2].Split(':');
-					
-					if (timer.Length < 2 || timer.Length > 4)
-					{
-						yield return "sendtochaterror Time length given is not valid.";
-						yield break;
-					}
-					
-					foreach (string a in timer)
-					{
-						foreach (char b in a)
-						{
-							if(!b.ToString().EqualsAny(ValidNumbers))
-							{
-								yield return "sendtochaterror Time given contains a character which is not a number.";
-								yield break;
-							}
-						}
-					}
-					
-					if (timer.Length == 2)
-					{
-						if (!timer[0].EqualsAny(SecondsAndMinutes) || !timer[1].EqualsAny(SecondsAndMinutes))
-						{
-							yield return "sendtochaterror Time format given is not valid.";
-							yield break;
-						}
-					}
-					
-					else if (timer.Length == 3)
-					{
-						if (!timer[0].EqualsAny(HoursIfSolo) || !timer[1].EqualsAny(SecondsAndMinutes) || !timer[2].EqualsAny(SecondsAndMinutes))
-						{
-							yield return "sendtochaterror Time format given is not valid.";
-							yield break;
-						}
-					}
-					
-					else if (timer.Length == 4)
-					{
-						if (!timer[0].EqualsAny(DaysUltimate) || !timer[1].EqualsAny(HoursIfMulti) || !timer[2].EqualsAny(SecondsAndMinutes) || !timer[3].EqualsAny(SecondsAndMinutes))
-						{
-							yield return "sendtochaterror Time format given is not valid.";
-							yield break;
-						}
-					}
-					
-					if (timer.Length == 2)
-					{
-						TimingIsSomething = (Int32.Parse(timer[0]) * 60) + Int32.Parse(timer[1]);
-					}
-					
-					else if (timer.Length == 3)
-						TimingIsSomething = (Int32.Parse(timer[0]) * 60 * 60) + (Int32.Parse(timer[1]) * 60) + Int32.Parse(timer[2]);
-					
-					else if (timer.Length == 4)
-					{
-						TimingIsSomething = (Int32.Parse(timer[0]) * 60 * 60 * 24) + (Int32.Parse(timer[0]) * 60 * 60) + (Int32.Parse(timer[1]) * 60) + Int32.Parse(timer[2]);
-					}
-						
-					while(((int)BombInfo.GetTime()).ToString() != TimingIsSomething.ToString())
-					{
-						yield return "trycancel The unlocking command was cancelled due to a cancel request.";
-					}
-					
-					LockBtn.OnInteract();
-					yield return "sendtochaterror The lock in now unlocked. Good luck.";
-				}	
-			}
-		}
-	}
+
+    IEnumerator ProcessTwitchCommand(string command)
+    {
+        string[] parameters = command.Split(' ');
+        if (Regex.IsMatch(command, @"^\s*real time\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            DateTime currenttime = DateTime.Now;
+            yield return "sendtochat Current Date/Time: " + currenttime.ToString();
+        }
+
+        else if (Regex.IsMatch(command, @"^\s*bomb time\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            string BombTime = BombInfo.GetFormattedTime();
+            yield return "sendtochat Current Bomb Time: " + BombTime;
+        }
+
+        else if (Regex.IsMatch(parameters[0], @"^\s*press\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            yield return null;
+            if (LockUnlocked == false)
+            {
+                yield return "sendtochaterror The lock is still locked. You are unable to interact with the arrows.";
+                yield break;
+            }
+
+            if (parameters.Length == 2)
+            {
+                foreach (char c in parameters[1])
+                {
+                    if (!c.ToString().EqualsAny(ValidMovements))
+                    {
+                        yield return "sendtochaterror An invalid movement has been detected in the command. The command was not initiated.";
+                        yield break;
+                    }
+                }
+
+                foreach (char d in parameters[1])
+                {
+                    if (Regex.IsMatch(d.ToString(), @"^\s*u\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) || Regex.IsMatch(d.ToString(), @"^\s*n\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                    {
+                        UpBtn.OnInteract();
+                        yield return new WaitForSeconds(0.1f);
+                    }
+
+                    else if (Regex.IsMatch(d.ToString(), @"^\s*d\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) || Regex.IsMatch(d.ToString(), @"^\s*s\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                    {
+                        DownBtn.OnInteract();
+                        yield return new WaitForSeconds(0.1f);
+                    }
+
+                    else if (Regex.IsMatch(d.ToString(), @"^\s*l\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) || Regex.IsMatch(d.ToString(), @"^\s*w\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                    {
+                        LeftBtn.OnInteract();
+                        yield return new WaitForSeconds(0.1f);
+                    }
+
+                    else if (Regex.IsMatch(d.ToString(), @"^\s*r\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) || Regex.IsMatch(d.ToString(), @"^\s*e\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                    {
+                        RightBtn.OnInteract();
+                        yield return new WaitForSeconds(0.1f);
+                    }
+                }
+            }
+
+            else
+            {
+                yield return "sendtochaterror Invalid parameter length.";
+                yield break;
+            }
+        }
+
+        else if (Regex.IsMatch(parameters[0], @"^\s*unlock\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) && parameters.Length > 1)
+        {
+            if (Regex.IsMatch(parameters[1], @"^\s*at\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                yield return null;
+                if (LockUnlocked == true)
+                {
+                    yield return "sendtochaterror The lock is unlocked now. You are unable to unlock it again.";
+                    yield break;
+                }
+
+                if (parameters.Length == 3)
+                {
+                    string[] timer = parameters[2].Split(':');
+                    foreach (string a in timer)
+                    {
+                        foreach (char b in a)
+                        {
+                            if (!b.ToString().EqualsAny(ValidNumbers))
+                            {
+                                yield return "sendtochaterror Time given contains a character which is not a number.";
+                                yield break;
+                            }
+                        }
+                    }
+
+                    if (timer.Length != 2)
+                    {
+                        yield return "sendtochaterror Time length given is not valid.";
+                        yield break;
+                    }
+
+                    if (!timer[1].EqualsAny(SecondsAndMinutes) || timer[0].Length < 2 || (timer[0].Length > 2 && timer[0][0] == '0'))
+                    {
+                        yield return "sendtochaterror Time format given is not valid.";
+                        yield break;
+                    }
+
+                    while (BombInfo.GetFormattedTime() != parameters[2])
+                    {
+                        yield return "trycancel The unlocking command was cancelled due to a cancel request.";
+                        yield return new WaitForSeconds(0.01f);
+                    }
+
+                    LockBtn.OnInteract();
+                }
+                else
+                {
+                    yield return "sendtochaterror Invalid parameter length.";
+                    yield break;
+                }
+            }
+        }
+    }
 }

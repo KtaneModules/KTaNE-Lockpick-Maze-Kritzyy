@@ -15,7 +15,8 @@ MonoBehaviour:
   title: Lockpick Maze
   author: Kritzy
   description: "The only time you're allowed to pick a lock is if you're defusing
-    a bomb... I hope...\n\nModule ID: KritLockpickMaze\n\nManual (HTML): https://www.ktane.timwi.de/HTML/Lockpick%20Maze.html\r\nManual
+    a bomb... I hope...\n\nModule ID: KritLockpickMaze\n\nTwitch Plays handler made
+    by BigCrunch22\n\nManual (HTML): https://www.ktane.timwi.de/HTML/Lockpick%20Maze.html\r\nManual
     (PDF): https://www.ktane.timwi.de/PDF/Lockpick%20Maze.pdf"
   version: V3
   outputFolder: build
