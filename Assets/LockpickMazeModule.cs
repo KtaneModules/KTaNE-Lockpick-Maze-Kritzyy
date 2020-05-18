@@ -728,7 +728,7 @@ public class LockpickMazeModule : MonoBehaviour
 	
 	//twitch plays
     #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"To determine the current time of the PC being used, use the command !{0} real time | To determine the current time of the bomb, use the command !{0} bomb time | To unlock the lock in the module, use the command !{0} unlock on [SPECIFIC TIME] (You must use the format of Tweaks' timer for inputting the specific time in the command. Example: 09:23, 6:45:32, 1:02:32:11, 00:22. Also, you may have to convert the bomb's time format to Tweaks' time format, and vice versa to get accurate times. Also, the time rule is based on the bomb's timer, not Tweaks' timer.) | To move in the maze, use the command !{0} press n/e/w/s or u/r/d/l (The movement can be performed in a chain)";
+    private readonly string TwitchHelpMessage = @"To determine the current time of the PC being used, use the command !{0} real time | To determine the current time of the bomb, use the command !{0} bomb time | To unlock the lock in the module, use the command !{0} unlock on [SPECIFIC TIME] (You must use the format of Tweaks' timer for inputting the specific time in the command. Example: 09:23, 6:45:32, 1:02:32:11, 00:22. Also, you may have to convert the bomb's time format to Tweaks' time format, and vice versa to get accurate times. Also, the time rule is based on the bomb's timer, not Tweaks' timer.) | Alternatively, if the bomb time is less than 60 seconds, you may also unlock the lock by using !{0} unlock now | To move in the maze, use the command !{0} press n/e/w/s or u/r/d/l (The movement can be performed in a chain)";
     #pragma warning restore 414
 	
 	bool LockUnlocked = false;
@@ -813,7 +813,21 @@ public class LockpickMazeModule : MonoBehaviour
 
         else if (Regex.IsMatch(parameters[0], @"^\s*unlock\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) && parameters.Length > 1)
         {
-            if (Regex.IsMatch(parameters[1], @"^\s*at\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            if (Regex.IsMatch(parameters[1], @"^\s*now\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                if (BombInfo.GetTime() < 60)
+                {
+                    LockBtn.OnInteract();
+                    yield break;
+                }
+                else
+                {
+                    yield return "sendtochaterror Time is not below 60 seconds. Use the command 'Unlock at' instead.";
+                    yield break;
+                }
+            }
+
+            else if (Regex.IsMatch(parameters[1], @"^\s*at\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
             {
                 yield return null;
                 if (LockUnlocked == true)
