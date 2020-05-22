@@ -165,7 +165,7 @@ public class LockpickMazeModule : MonoBehaviour
                         {
                             { "D", "D R", "L R", "L R", "L R", "L R", "L R", "L D" },
                             { "U D", "U R", "L R", "L R", "L R", "L D", "U", "D" },
-                            { "U R D", "L", "R D", "L D", "D R", "U R D", "L R", "U R D" },
+                            { "U R D", "L", "R D", "L D", "D R", "U R D", "L R", "U L D" },
                             { "U R", "L D", "U D", "U D", "U D", "U D", "D", "U D" },
                             { "R D", "U L D", "U D", "U D", "U D", "U D", "U D", "U D" },
                             { "U D", "U R D", "U L", "U R", "U L", "U R", "U L", "U D" },
