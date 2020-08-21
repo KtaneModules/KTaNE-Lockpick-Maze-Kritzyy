@@ -888,47 +888,83 @@ public class LockpickMazeModule : MonoBehaviour
             LockBtn.OnInteract();
             yield return new WaitForSeconds(0.1f);
         }
-        var q = new Queue<int[]>();
-        var allMoves = new List<Movement>();
-        var startPoint = new int[] { CurrentRow, CurrentColumn };
-        var target = new int[] { GoalRow, GoalColumn };
-        q.Enqueue(startPoint);
-        while (q.Count > 0)
+        if (CurrentColumn == GoalColumn && CurrentRow == GoalRow)
         {
-            var next = q.Dequeue();
-            if (next[0] == target[0] && next[1] == target[1])
-                goto readyToSubmit;
-            string paths = Maze[0][next[0], next[1]];
-            var cell = paths.Replace(" ", "");
-            var allDirections = "ULRD";
-            var offsets = new int[,] { { -1, 0 }, { 0, -1 }, { 0, 1 }, { 1, 0 } };
-            for (int i = 0; i < 4; i++)
+            string paths = Maze[0][CurrentRow, CurrentColumn].Replace(" ", "");
+            int rando = Random.Range(0, paths.Length);
+            if (paths[rando] == 'U')
             {
-                var check = new int[] { next[0] + offsets[i, 0], next[1] + offsets[i, 1] };
-                if (cell.Contains(allDirections[i]) && !allMoves.Any(x => x.start[0] == check[0] && x.start[1] == check[1]))
-                {
-                    q.Enqueue(new int[] { next[0] + offsets[i, 0], next[1] + offsets[i, 1] });
-                    allMoves.Add(new Movement { start = next, end = new int[] { next[0] + offsets[i, 0], next[1] + offsets[i, 1] }, direction = i });
-                }
+                UpBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+                DownBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+            else if (paths[rando] == 'L')
+            {
+                LeftBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+                RightBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+            else if (paths[rando] == 'D')
+            {
+                DownBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+                UpBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+            else if (paths[rando] == 'R')
+            {
+                RightBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+                LeftBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
             }
         }
-        throw new InvalidOperationException("There is a bug in the TP autosolver.");
-        readyToSubmit:
-        KMSelectable[] buttons = new KMSelectable[] { UpBtn, LeftBtn, RightBtn, DownBtn };
-        if (allMoves.Count != 0) // Checks for position already being target
+        else
         {
-            var target2 = new int[] { target[0], target[1] };
-            var lastMove = allMoves.First(x => x.end[0] == target2[0] && x.end[1] == target2[1]);
-            var relevantMoves = new List<Movement> { lastMove };
-            while (lastMove.start != startPoint)
+            var q = new Queue<int[]>();
+            var allMoves = new List<Movement>();
+            var startPoint = new int[] { CurrentRow, CurrentColumn };
+            var target = new int[] { GoalRow, GoalColumn };
+            q.Enqueue(startPoint);
+            while (q.Count > 0)
             {
-                lastMove = allMoves.First(x => x.end[0] == lastMove.start[0] && x.end[1] == lastMove.start[1]);
-                relevantMoves.Add(lastMove);
+                var next = q.Dequeue();
+                if (next[0] == target[0] && next[1] == target[1])
+                    goto readyToSubmit;
+                string paths = Maze[0][next[0], next[1]];
+                var cell = paths.Replace(" ", "");
+                var allDirections = "ULRD";
+                var offsets = new int[,] { { -1, 0 }, { 0, -1 }, { 0, 1 }, { 1, 0 } };
+                for (int i = 0; i < 4; i++)
+                {
+                    var check = new int[] { next[0] + offsets[i, 0], next[1] + offsets[i, 1] };
+                    if (cell.Contains(allDirections[i]) && !allMoves.Any(x => x.start[0] == check[0] && x.start[1] == check[1]))
+                    {
+                        q.Enqueue(new int[] { next[0] + offsets[i, 0], next[1] + offsets[i, 1] });
+                        allMoves.Add(new Movement { start = next, end = new int[] { next[0] + offsets[i, 0], next[1] + offsets[i, 1] }, direction = i });
+                    }
+                }
             }
-            for (int i = 0; i < relevantMoves.Count; i++)
+            throw new InvalidOperationException("There is a bug in the TP autosolver.");
+            readyToSubmit:
+            KMSelectable[] buttons = new KMSelectable[] { UpBtn, LeftBtn, RightBtn, DownBtn };
+            if (allMoves.Count != 0) // Checks for position already being target
             {
-                buttons[relevantMoves[relevantMoves.Count - 1 - i].direction].OnInteract();
-                yield return new WaitForSeconds(.1f);
+                var target2 = new int[] { target[0], target[1] };
+                var lastMove = allMoves.First(x => x.end[0] == target2[0] && x.end[1] == target2[1]);
+                var relevantMoves = new List<Movement> { lastMove };
+                while (lastMove.start != startPoint)
+                {
+                    lastMove = allMoves.First(x => x.end[0] == lastMove.start[0] && x.end[1] == lastMove.start[1]);
+                    relevantMoves.Add(lastMove);
+                }
+                for (int i = 0; i < relevantMoves.Count; i++)
+                {
+                    buttons[relevantMoves[relevantMoves.Count - 1 - i].direction].OnInteract();
+                    yield return new WaitForSeconds(.1f);
+                }
             }
         }
     }
