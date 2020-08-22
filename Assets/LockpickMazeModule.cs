@@ -161,11 +161,11 @@ public class LockpickMazeModule : MonoBehaviour
                 {
                     Maze = new List<string[,]> //Maze[0][Row, Column]
                     {
-                        new string[8, 8]//Silver
+                        new string[8, 8] //Silver
                         {
                             { "D", "D R", "L R", "L R", "L R", "L R", "L R", "L D" },
                             { "U D", "U R", "L R", "L R", "L R", "L D", "U", "D" },
-                            { "U R D", "L", "R D", "L D", "D R", "U R D", "L R", "U L D" },
+                            { "U R D", "L", "R D", "L D", "D R", "U L R D", "L R", "U L D" },
                             { "U R", "L D", "U D", "U D", "U D", "U D", "D", "U D" },
                             { "R D", "U L D", "U D", "U D", "U D", "U D", "U D", "U D" },
                             { "U D", "U R D", "U L", "U R", "U L", "U R", "U L", "U D" },
@@ -728,7 +728,7 @@ public class LockpickMazeModule : MonoBehaviour
 	
 	//twitch plays
     #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"To determine the current time of the PC being used, use the command !{0} real time | To determine the current time of the bomb, use the command !{0} bomb time | To unlock the lock in the module, use the command !{0} unlock on [SPECIFIC TIME] (You must use the format of Tweaks' timer for inputting the specific time in the command. Example: 09:23, 6:45:32, 1:02:32:11, 00:22. Also, you may have to convert the bomb's time format to Tweaks' time format, and vice versa to get accurate times. Also, the time rule is based on the bomb's timer, not Tweaks' timer.) | Alternatively, if the bomb time is less than 60 seconds, you may also unlock the lock by using !{0} unlock now | To move in the maze, use the command !{0} press n/e/w/s or u/r/d/l (The movement can be performed in a chain)";
+    private readonly string TwitchHelpMessage = @"To determine the current time of the PC being used, use the command !{0} real time | To determine the current time of the bomb, use the command !{0} bomb time | To unlock the lock in the module, use the command !{0} unlock at [SPECIFIC TIME] (You must use the format of Tweaks' timer for inputting the specific time in the command. Example: 09:23, 6:45:32, 1:02:32:11, 00:22. Also, you may have to convert the bomb's time format to Tweaks' time format, and vice versa to get accurate times. Also, the time rule is based on the bomb's timer, not Tweaks' timer.) | Alternatively, if the bomb time is less than 60 seconds, you may also unlock the lock by using !{0} unlock now | To move in the maze, use the command !{0} press n/e/w/s or u/r/d/l (The movement can be performed in a chain)";
     #pragma warning restore 414
 	
 	bool LockUnlocked = false;
@@ -878,5 +878,101 @@ public class LockpickMazeModule : MonoBehaviour
                 }
             }
         }
+    }
+
+    IEnumerator TwitchHandleForcedSolve()
+    {
+        if (!LockUnlocked)
+        {
+            while (DateTime.Now.ToString("mm").Any(BombInfo.GetFormattedTime().Remove(0, 3).Contains) && BombInfo.GetTime() >= 60) { yield return true; yield return new WaitForSeconds(0.1f); }
+            LockBtn.OnInteract();
+            yield return new WaitForSeconds(0.1f);
+        }
+        if (CurrentColumn == GoalColumn && CurrentRow == GoalRow)
+        {
+            string paths = Maze[0][CurrentRow, CurrentColumn].Replace(" ", "");
+            int rando = Random.Range(0, paths.Length);
+            if (paths[rando] == 'U')
+            {
+                UpBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+                DownBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+            else if (paths[rando] == 'L')
+            {
+                LeftBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+                RightBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+            else if (paths[rando] == 'D')
+            {
+                DownBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+                UpBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+            else if (paths[rando] == 'R')
+            {
+                RightBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+                LeftBtn.OnInteract();
+                yield return new WaitForSeconds(0.1f);
+            }
+        }
+        else
+        {
+            var q = new Queue<int[]>();
+            var allMoves = new List<Movement>();
+            var startPoint = new int[] { CurrentRow, CurrentColumn };
+            var target = new int[] { GoalRow, GoalColumn };
+            q.Enqueue(startPoint);
+            while (q.Count > 0)
+            {
+                var next = q.Dequeue();
+                if (next[0] == target[0] && next[1] == target[1])
+                    goto readyToSubmit;
+                string paths = Maze[0][next[0], next[1]];
+                var cell = paths.Replace(" ", "");
+                var allDirections = "ULRD";
+                var offsets = new int[,] { { -1, 0 }, { 0, -1 }, { 0, 1 }, { 1, 0 } };
+                for (int i = 0; i < 4; i++)
+                {
+                    var check = new int[] { next[0] + offsets[i, 0], next[1] + offsets[i, 1] };
+                    if (cell.Contains(allDirections[i]) && !allMoves.Any(x => x.start[0] == check[0] && x.start[1] == check[1]))
+                    {
+                        q.Enqueue(new int[] { next[0] + offsets[i, 0], next[1] + offsets[i, 1] });
+                        allMoves.Add(new Movement { start = next, end = new int[] { next[0] + offsets[i, 0], next[1] + offsets[i, 1] }, direction = i });
+                    }
+                }
+            }
+            throw new InvalidOperationException("There is a bug in the TP autosolver.");
+            readyToSubmit:
+            KMSelectable[] buttons = new KMSelectable[] { UpBtn, LeftBtn, RightBtn, DownBtn };
+            if (allMoves.Count != 0) // Checks for position already being target
+            {
+                var target2 = new int[] { target[0], target[1] };
+                var lastMove = allMoves.First(x => x.end[0] == target2[0] && x.end[1] == target2[1]);
+                var relevantMoves = new List<Movement> { lastMove };
+                while (lastMove.start != startPoint)
+                {
+                    lastMove = allMoves.First(x => x.end[0] == lastMove.start[0] && x.end[1] == lastMove.start[1]);
+                    relevantMoves.Add(lastMove);
+                }
+                for (int i = 0; i < relevantMoves.Count; i++)
+                {
+                    buttons[relevantMoves[relevantMoves.Count - 1 - i].direction].OnInteract();
+                    yield return new WaitForSeconds(.1f);
+                }
+            }
+        }
+    }
+
+    class Movement
+    {
+        public int[] start;
+        public int[] end;
+        public int direction;
     }
 }
