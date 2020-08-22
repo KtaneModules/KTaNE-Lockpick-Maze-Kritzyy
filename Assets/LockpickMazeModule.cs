@@ -146,10 +146,10 @@ public class LockpickMazeModule : MonoBehaviour
                         new string[8, 8] //Bronze
                         {
                             { "D", "D R", "D R L", "L R", "L R", "L R", "L R", "L D" },
-                            { "U D", "U R D", "U L D", "R", "L R", "L R", "L R", "U L" },
+                            { "U D", "U R D", "U L", "R", "L R", "L R", "L R", "U L" },
                             { "U D", "U R D", "L R", "L D", "R D", "L D", "D", "D" },
                             { "U D", "U D", "D", "U D", "U R D", "U L D", "U D", "U D" },
-                            { "U R D", "U L D", "U R D", "U L D", "U D", "U D", "U D", "U D" },
+                            { "U R D", "U L D", "U R D", "U L D", "U D", "fU D", "U D", "U D" },
                             { "U D", "U D", "U", "U R", "U L", "U R", "U R L", "U L D" },
                             { "U", "U D", "R D", "L R", "L R", "L R", "L R", "U L" },
                             { "R", "U L", "U R", "L R", "L R", "L R", "L R", "L" }
@@ -382,15 +382,15 @@ public class LockpickMazeModule : MonoBehaviour
         {
             if (!ModuleName.Contains("Lockpick"))
             {
-                if (ModuleName.Contains("Color"))
+                if (ModuleName.ToLowerInvariant().Contains("color"))
                 {
                     ColumnNumber += 5;
                 }
-                else if (ModuleName.Contains("Maze"))
+                else if (ModuleName.ToLowerInvariant().Contains("maze"))
                 {
                     ColumnNumber += 3;
                 }
-                else if (ModuleName.Contains("Button"))
+                else if (ModuleName.Contains("button"))
                 {
                     ColumnNumber += 1;
                 }

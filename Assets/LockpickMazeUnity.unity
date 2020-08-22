@@ -299,6 +299,113 @@ Prefab:
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 8814ea52310d2614a9feda02ec355ae4, type: 2}
   m_IsPrefabParent: 0
+--- !u!1001 &833809745
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_RootOrder
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1432198749201138, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_Name
+      value: LockpickMazeModule (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 114836900858466164, guid: 33087e5626de85d43b132da400164fda,
+        type: 2}
+      propertyPath: ModuleType
+      value: TestingModule
+      objectReference: {fileID: 0}
+    - target: {fileID: 114836900858466164, guid: 33087e5626de85d43b132da400164fda,
+        type: 2}
+      propertyPath: ModuleDisplayName
+      value: Colorful Buttons
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 100100000, guid: 33087e5626de85d43b132da400164fda, type: 2}
+  m_IsPrefabParent: 0
+--- !u!1001 &1613961359
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495936917987448, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_RootOrder
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1432198749201138, guid: 33087e5626de85d43b132da400164fda, type: 2}
+      propertyPath: m_Name
+      value: LockpickMazeModule (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 114836900858466164, guid: 33087e5626de85d43b132da400164fda,
+        type: 2}
+      propertyPath: ModuleDisplayName
+      value: A-maze-ing buttons
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 100100000, guid: 33087e5626de85d43b132da400164fda, type: 2}
+  m_IsPrefabParent: 0
 --- !u!1 &1631776850
 GameObject:
   m_ObjectHideFlags: 0
