@@ -376,21 +376,29 @@ public class LockpickMazeModule : MonoBehaviour
     {
         //Goal column
         int ColumnNumber = BombInfo.GetSolvableModuleNames().Count();
+        foreach (string Module in BombInfo.GetSolvableModuleNames())
+        {
+            if (Module == "Lockpick Maze")
+            {
+                ColumnNumber--;
+            }
+        }
         bool SpecialCase = false;
+
 
         foreach (string ModuleName in BombInfo.GetSolvableModuleNames())
         {
             if (!ModuleName.Contains("Lockpick"))
             {
-                if (ModuleName.ToLowerInvariant().Contains("color"))
+                if (ModuleName.ToLowerInvariant().Contains("color".ToLowerInvariant()))
                 {
                     ColumnNumber += 5;
                 }
-                else if (ModuleName.ToLowerInvariant().Contains("maze"))
+                else if (ModuleName.ToLowerInvariant().Contains("maze".ToLowerInvariant()))
                 {
                     ColumnNumber += 3;
                 }
-                else if (ModuleName.Contains("button"))
+                else if (ModuleName.Contains("button".ToLowerInvariant()))
                 {
                     ColumnNumber += 1;
                 }
@@ -400,11 +408,13 @@ public class LockpickMazeModule : MonoBehaviour
         {
             if (ModuleName.Contains("Combination Lock") || ModuleName.Contains("Safety Safe"))
             {
+                SpecialCase = true;
                 ColumnNumber -= 3;
             }
         }
         if (BombInfo.GetSolvableModuleNames().Contains("Retirement"))
         {
+            SpecialCase = true;
             ColumnNumber -= 4;
         }
         if (BombInfo.IsIndicatorOn(Indicator.BOB) && SpecialCase == false)
@@ -462,7 +472,16 @@ public class LockpickMazeModule : MonoBehaviour
 
     protected bool HandleLockPress()
     {
-        string time = BombInfo.GetFormattedTime().Remove(0, 3);
+        string time;
+        //Bomb Time is above 1:40 hours, which is 100 minutes, which messes up the format.
+        if (BombInfo.GetTime() >= 6000) //So if 100 minutes, take one extra character away.
+        {
+            time = BombInfo.GetFormattedTime().Remove(0, 4);
+        }
+        else //Else, do not.
+        {
+            time = BombInfo.GetFormattedTime().Remove(0, 3);
+        }
         if (!DateTime.Now.ToString("mm").Any(time.Contains))
         {
             Debug.LogFormat("[Lockpick Maze #{0}] Actual time: {1} minutes. Bomb time {2}. Conditions are met.", ModuleID, DateTime.Now.ToString("mm"), BombInfo.GetFormattedTime());
