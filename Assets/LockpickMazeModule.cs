@@ -398,7 +398,7 @@ public class LockpickMazeModule : MonoBehaviour
                 {
                     ColumnNumber += 3;
                 }
-                else if (ModuleName.Contains("button".ToLowerInvariant()))
+                else if (ModuleName.ToLowerInvariant().Contains("button".ToLowerInvariant()))
                 {
                     ColumnNumber += 1;
                 }
@@ -473,15 +473,8 @@ public class LockpickMazeModule : MonoBehaviour
     protected bool HandleLockPress()
     {
         string time;
-        //Bomb Time is above 1:40 hours, which is 100 minutes, which messes up the format.
-        if (BombInfo.GetTime() >= 6000) //So if 100 minutes, take one extra character away.
-        {
-            time = BombInfo.GetFormattedTime().Remove(0, 4);
-        }
-        else //Else, do not.
-        {
-            time = BombInfo.GetFormattedTime().Remove(0, 3);
-        }
+        //Gets the 2 seconds digits of the Bomb Timer no matter how much time is on the bomb
+        time = BombInfo.GetFormattedTime().Substring(BombInfo.GetFormattedTime().Length-2, 2);
         if (!DateTime.Now.ToString("mm").Any(time.Contains))
         {
             Debug.LogFormat("[Lockpick Maze #{0}] Actual time: {1} minutes. Bomb time {2}. Conditions are met.", ModuleID, DateTime.Now.ToString("mm"), BombInfo.GetFormattedTime());
@@ -836,6 +829,7 @@ public class LockpickMazeModule : MonoBehaviour
             {
                 if (BombInfo.GetTime() < 60)
                 {
+                    yield return null;
                     LockBtn.OnInteract();
                     yield break;
                 }
@@ -903,7 +897,7 @@ public class LockpickMazeModule : MonoBehaviour
     {
         if (!LockUnlocked)
         {
-            while (DateTime.Now.ToString("mm").Any(BombInfo.GetFormattedTime().Remove(0, 3).Contains) && BombInfo.GetTime() >= 60) { yield return true; yield return new WaitForSeconds(0.1f); }
+            while (DateTime.Now.ToString("mm").Any(BombInfo.GetFormattedTime().Substring(BombInfo.GetFormattedTime().Length-2, 2).Contains) && BombInfo.GetTime() >= 60) { yield return true; }
             LockBtn.OnInteract();
             yield return new WaitForSeconds(0.1f);
         }
