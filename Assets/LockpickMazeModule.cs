@@ -149,7 +149,7 @@ public class LockpickMazeModule : MonoBehaviour
                             { "U D", "U R D", "U L", "R", "L R", "L R", "L R", "U L" },
                             { "U D", "U R D", "L R", "L D", "R D", "L D", "D", "D" },
                             { "U D", "U D", "D", "U D", "U R D", "U L D", "U D", "U D" },
-                            { "U R D", "U L D", "U R D", "U L D", "U D", "fU D", "U D", "U D" },
+                            { "U R D", "U L D", "U R D", "U L D", "U D", "U D", "U D", "U D" },
                             { "U D", "U D", "U", "U R", "U L", "U R", "U R L", "U L D" },
                             { "U", "U D", "R D", "L R", "L R", "L R", "L R", "U L" },
                             { "R", "U L", "U R", "L R", "L R", "L R", "L R", "L" }
@@ -163,7 +163,7 @@ public class LockpickMazeModule : MonoBehaviour
                     {
                         new string[8, 8] //Silver
                         {
-                            { "D", "D R", "L R", "L R", "L R", "L R", "L R", "L D" },
+                            { "D", "D R", "L R", "L R", "L R", "L R", "L R D", "L" },
                             { "U D", "U R", "L R", "L R", "L R", "L D", "U", "D" },
                             { "U R D", "L", "R D", "L D", "D R", "U L R D", "L R", "U L D" },
                             { "U R", "L D", "U D", "U D", "U D", "U D", "D", "U D" },
